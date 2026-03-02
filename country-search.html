@@ -123,47 +123,19 @@
       align-items: flex-start;
       flex-wrap: wrap;
     }
-    .flag-on-pole {
+    .flag-wrap {
       flex-shrink: 0;
-      display: flex;
-      align-items: flex-end;
-      padding-bottom: 0.5rem;
-    }
-    .flag-pole-container {
-      display: flex;
-      align-items: stretch;
-      position: relative;
-    }
-    .flag-pole {
-      width: 10px;
-      min-height: 180px;
-      background: linear-gradient(90deg, #6b7280 0%, #4b5563 50%, #374151 100%);
-      border-radius: 2px;
-      box-shadow: 1px 0 2px rgba(0,0,0,0.2);
-    }
-    .flag-pole-base {
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 32px;
-      height: 12px;
-      background: linear-gradient(180deg, #4b5563, #374151);
-      border-radius: 2px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-    }
-    .flag-wrapper {
-      margin-left: -3px;
       line-height: 0;
-      box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+      box-shadow: 2px 2px 12px rgba(0,0,0,0.12);
     }
-    .flag-wrapper img {
+    .flag-wrap img {
       display: block;
       height: 120px;
       width: auto;
       max-width: 200px;
       object-fit: contain;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border);
+      border-radius: 4px;
     }
     .country-details {
       flex: 1;
@@ -289,18 +261,10 @@
         : pop.toLocaleString();
     }
 
-    function buildFlagOnPole(flagUrl, countryName) {
+    function buildFlag(flagUrl, countryName) {
       const wrap = document.createElement('div');
-      wrap.className = 'flag-on-pole';
-      wrap.setAttribute('aria-hidden', 'true');
-      wrap.innerHTML =
-        '<div class="flag-pole-container">' +
-          '<div class="flag-pole" role="presentation"></div>' +
-          '<div class="flag-pole-base" role="presentation"></div>' +
-          '<div class="flag-wrapper">' +
-            '<img src="' + escapeHtml(flagUrl) + '" alt="Flag of ' + escapeHtml(countryName) + '" />' +
-          '</div>' +
-        '</div>';
+      wrap.className = 'flag-wrap';
+      wrap.innerHTML = '<img src="' + escapeHtml(flagUrl) + '" alt="Flag of ' + escapeHtml(countryName) + '" />';
       return wrap;
     }
 
@@ -318,7 +282,7 @@
       card.className = 'country-card';
       const layout = document.createElement('div');
       layout.className = 'results-layout';
-      if (flagUrl) layout.appendChild(buildFlagOnPole(flagUrl, name));
+      if (flagUrl) layout.appendChild(buildFlag(flagUrl, name));
       const details = document.createElement('div');
       details.className = 'country-details';
       details.innerHTML =
@@ -378,7 +342,7 @@
 
         const list = Array.isArray(data) ? data : [data];
         if (list.length === 0) {
-          showMessage('No countries found for "' + name + '".', 'error');
+          showMessage('No countries found for the given name', 'error');
           showEmpty();
         } else {
           hideMessage();
