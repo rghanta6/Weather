@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>" />
+  <title>Country Search</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --accent: #0f766e;
+      --accent-hover: #0d9488;
+      --border: #e2e8f0;
+      --error-bg: #fef2f2;
+      --error-text: #b91c1c;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 40px -10px rgba(0,0,0,0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem 1rem;
+    }
+    .page {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 1.5rem;
+      letter-spacing: -0.02em;
+    }
+    .search-bar {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card-bg);
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-bar input::placeholder { color: var(--text-muted); }
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    }
+    .search-bar button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .search-bar button:hover { background: var(--accent-hover); }
+    .search-bar button:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+    }
+    .message {
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 0.9375rem;
+    }
+    .message.error {
+      background: var(--error-bg);
+      color: var(--error-text);
+    }
+    .message.info {
+      background: #ecfdf5;
+      color: #065f46;
+    }
+    #response {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .empty-state {
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9375rem;
+    }
+    .empty-state code {
+      background: var(--border);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-size: 0.875em;
+    }
+    .country-card {
+      padding: 2rem;
+    }
+    .results-layout {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .flag-on-pole {
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      padding-bottom: 0.5rem;
+    }
+    .flag-pole-container {
+      display: flex;
+      align-items: stretch;
+      position: relative;
+    }
+    .flag-pole {
+      width: 10px;
+      min-height: 180px;
+      background: linear-gradient(90deg, #6b7280 0%, #4b5563 50%, #374151 100%);
+      border-radius: 2px;
+      box-shadow: 1px 0 2px rgba(0,0,0,0.2);
+    }
+    .flag-pole-base {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 32px;
+      height: 12px;
+      background: linear-gradient(180deg, #4b5563, #374151);
+      border-radius: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    }
+    .flag-wrapper {
+      margin-left: -3px;
+      line-height: 0;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    }
+    .flag-wrapper img {
+      display: block;
+      height: 120px;
+      width: auto;
+      max-width: 200px;
+      object-fit: contain;
+      border: 1px solid #e5e7eb;
+    }
+    .country-details {
+      flex: 1;
+      min-width: 200px;
+    }
+    .country-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 1.25rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .detail-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.9375rem;
+    }
+    .detail-row:last-child { margin-bottom: 0; }
+    .detail-label {
+      color: var(--text-muted);
+      min-width: 140px;
+      font-weight: 500;
+    }
+    .detail-value {
+      color: var(--text);
+      font-weight: 500;
+    }
+    .loading-state {
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9375rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Country Search</h1>
+    <div class="search-bar">
+      <input
+        type="text"
+        id="countryInput"
+        placeholder="Enter country name (e.g. India, France)"
+        aria-label="Country name"
+      />
+      <button type="button" id="searchBtn">Search</button>
+    </div>
+    <div id="message" class="message" role="alert" aria-live="polite" hidden></div>
+    <div id="response">
+      <p class="empty-state">Enter a country name and click Search. <strong>Tip:</strong> If nothing happens, open this page via a local server (run in terminal: <code>npx serve .</code> in the weather folder, then visit <code>http://localhost:3000/country-search.html</code>).</p>
+    </div>
+  </div>
+
+  <script>
+    window.onerror = function (msg, url, line, col, err) {
+      var el = document.getElementById('message');
+      if (el) {
+        el.textContent = 'JavaScript error: ' + (msg || (err && err.message) || 'unknown');
+        el.className = 'message error';
+        el.hidden = false;
+      }
+      return false;
+    };
+
+    var countryInput = document.getElementById('countryInput');
+    var searchBtn = document.getElementById('searchBtn');
+    var messageEl = document.getElementById('message');
+    var responseEl = document.getElementById('response');
+
+    function showMessage(text, type) {
+      if (!messageEl) return;
+      messageEl.textContent = text;
+      messageEl.className = 'message ' + (type || 'info');
+      messageEl.hidden = false;
+      try { messageEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+    }
+
+    function hideMessage() {
+      if (messageEl) messageEl.hidden = true;
+    }
+
+    function setLoading(loading) {
+      if (searchBtn) {
+        searchBtn.disabled = loading;
+        searchBtn.textContent = loading ? 'Searching…' : 'Search';
+      }
+    }
+
+    function escapeHtml(str) {
+      if (str == null) return '';
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
+    function getCurrentTimeInTimezone(timezones) {
+      if (!timezones || timezones.length === 0) return '—';
+      const offsetStr = timezones[0];
+      const match = offsetStr.match(/UTC([+-])(\d{1,2}):?(\d{2})?/);
+      if (!match) return '—';
+      const sign = match[1] === '+' ? 1 : -1;
+      const hours = parseInt(match[2], 10) || 0;
+      const minutes = parseInt(match[3], 10) || 0;
+      const offsetMinutes = sign * (hours * 60 + minutes);
+      const now = new Date();
+      const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+      let localMinutes = utcMinutes + offsetMinutes;
+      localMinutes = ((localMinutes % 1440) + 1440) % 1440;
+      const h = Math.floor(localMinutes / 60) % 24;
+      const m = localMinutes % 60;
+      const d = new Date(now);
+      d.setUTCHours(h, m, now.getUTCSeconds(), 0);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    }
+
+    function formatPopulationMillions(pop) {
+      if (pop == null || typeof pop !== 'number') return '—';
+      const millions = pop / 1e6;
+      return millions >= 0.01
+        ? millions.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: millions < 1 ? 2 : 0 }) + ' million'
+        : pop.toLocaleString();
+    }
+
+    function buildFlagOnPole(flagUrl, countryName) {
+      const wrap = document.createElement('div');
+      wrap.className = 'flag-on-pole';
+      wrap.setAttribute('aria-hidden', 'true');
+      wrap.innerHTML =
+        '<div class="flag-pole-container">' +
+          '<div class="flag-pole" role="presentation"></div>' +
+          '<div class="flag-pole-base" role="presentation"></div>' +
+          '<div class="flag-wrapper">' +
+            '<img src="' + escapeHtml(flagUrl) + '" alt="Flag of ' + escapeHtml(countryName) + '" />' +
+          '</div>' +
+        '</div>';
+      return wrap;
+    }
+
+    function showCountryCard(country) {
+      const name = country.name ? (country.name.common || country.name.official || '') : '';
+      const capital = country.capital && country.capital.length ? country.capital.join(', ') : '—';
+      const languages = country.languages && typeof country.languages === 'object'
+        ? Object.values(country.languages).join(', ')
+        : '—';
+      const populationStr = formatPopulationMillions(country.population);
+      const localTime = getCurrentTimeInTimezone(country.timezones);
+      const flagUrl = country.flags && (country.flags.png || country.flags.svg);
+
+      const card = document.createElement('div');
+      card.className = 'country-card';
+      const layout = document.createElement('div');
+      layout.className = 'results-layout';
+      if (flagUrl) layout.appendChild(buildFlagOnPole(flagUrl, name));
+      const details = document.createElement('div');
+      details.className = 'country-details';
+      details.innerHTML =
+        '<div class="country-name">' + escapeHtml(name) + '</div>' +
+        '<div class="detail-row"><span class="detail-label">Capital</span><span class="detail-value">' + escapeHtml(capital) + '</span></div>' +
+        '<div class="detail-row"><span class="detail-label">Languages</span><span class="detail-value">' + escapeHtml(languages) + '</span></div>' +
+        '<div class="detail-row"><span class="detail-label">Population</span><span class="detail-value">' + escapeHtml(populationStr) + '</span></div>' +
+        '<div class="detail-row"><span class="detail-label">Current time</span><span class="detail-value">' + escapeHtml(localTime) + '</span></div>';
+      layout.appendChild(details);
+      card.appendChild(layout);
+      return card;
+    }
+
+    function showResponse(data) {
+      if (!responseEl) return;
+      responseEl.innerHTML = '';
+      const countries = Array.isArray(data) ? data : (data && !data.message ? [data] : []);
+      const first = countries[0];
+      if (first) {
+        responseEl.appendChild(showCountryCard(first));
+      } else {
+        responseEl.innerHTML = '<p class="empty-state">No country data to display.</p>';
+      }
+    }
+
+    function showEmpty() {
+      if (responseEl) responseEl.innerHTML = '<p class="empty-state">Enter a country name and click Search to see the flag, capital, languages, population, and local time.</p>';
+    }
+
+    function showLoading() {
+      if (responseEl) responseEl.innerHTML = '<p class="loading-state">Searching…</p>';
+    }
+
+    searchBtn.addEventListener('click', async function () {
+      var name = (countryInput && countryInput.value) ? String(countryInput.value).trim() : '';
+      if (!name) {
+        showMessage('Please enter a country name.', 'error');
+        return;
+      }
+
+      setLoading(true);
+      if (responseEl) responseEl.innerHTML = '<p class="loading-state">Searching…</p>';
+      hideMessage();
+
+      const url = 'https://restcountries.com/v3.1/name/' + encodeURIComponent(name);
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!res.ok) {
+          showMessage(data.message || 'Request failed.', 'error');
+          showEmpty();
+          setLoading(false);
+          return;
+        }
+
+        const list = Array.isArray(data) ? data : [data];
+        if (list.length === 0) {
+          showMessage('No countries found for "' + name + '".', 'error');
+          showEmpty();
+        } else {
+          hideMessage();
+          showResponse(list.length > 1 ? list : data);
+        }
+      } catch (err) {
+        const msg = err && err.message ? err.message : String(err);
+        showMessage('Search failed. Use a local server: run "npx serve ." in the weather folder, then open http://localhost:3000/country-search.html. Error: ' + msg, 'error');
+        showEmpty();
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    countryInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') searchBtn.click();
+    });
+  </script>
+</body>
+</html>
