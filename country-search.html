@@ -215,7 +215,7 @@
     </div>
     <div id="message" class="message" role="alert" aria-live="polite" hidden></div>
     <div id="response">
-      <p class="empty-state">Enter a country name and click Search. <strong>Tip:</strong> If nothing happens, open this page via a local server (run in terminal: <code>npx serve .</code> in the weather folder, then visit <code>http://localhost:3000/country-search.html</code>).</p>
+      <p class="empty-state">Enter a country name and click Search, you should see the flag, the capital city name and few other details.</p>
     </div>
   </div>
 
@@ -345,7 +345,7 @@
     }
 
     function showEmpty() {
-      if (responseEl) responseEl.innerHTML = '<p class="empty-state">Enter a country name and click Search to see the flag, capital, languages, population, and local time.</p>';
+      if (responseEl) responseEl.innerHTML = '<p class="empty-state">Enter a country name and click Search, you should see the flag, the capital city name and few other details.</p>';
     }
 
     function showLoading() {
@@ -378,7 +378,7 @@
 
         const list = Array.isArray(data) ? data : [data];
         if (list.length === 0) {
-          showMessage('No countries found for "' + name + '".', 'error');
+          showMessage('No countries found for “‘ + name + '”.', 'error');
           showEmpty();
         } else {
           hideMessage();
